@@ -26,19 +26,34 @@ paths:
           application/x-www-form-urlencoded:
             schema:
               $ref: "#/components/schemas/UserRegistrationRequest"
+            examples:
+              standard-input:
+                description: this is the correct way of the user input the user registration form
+                value: { "phone_number": "+6288888888888", "name":"fulan fulanah", "password":"some-secrets" }
       responses:
         '200':
           description: registration succeed
           content:
             application/json:    
               schema:
-                $ref: "#/components/schemas/MessageResponse"
+                $ref: "#/components/schemas/UserRegistrationResponse"
+              examples:
+                success:
+                  description: this is the success response after user being registered
+                  value: { "user_id": 1 }
         '400':
           description: registration failed
           content:
             application/json:    
               schema:
                 $ref: "#/components/schemas/MessageResponse"
+              examples:
+                invalid-1:
+                  description: this is the response when user input the phone number below 10 character or exceeding 13 char.
+                  value: {"message": "Phone numbers must be at minimum 10 characters and maximum 13 characters, your phone number are xx characters."}
+                invalid-2:
+                  description: this is the response when user input the phone number below 10 character or exceeding 13 char and not started with +62.
+                  value: {"message": "Phone numbers must be at minimum 10 characters and maximum 13 characters, your phone number are xx characters. Phone numbers must be starts with +62."}
         '500':
           description: registration failed - internal server error
           content:
@@ -163,6 +178,12 @@ components:
         name:
           description: the full name of the user
           type: string
+    UserRegistrationResponse:
+      type: object
+      properties:
+        user_id:
+          description: this is the returned id of the user after registration
+          type: number
     UserLoginRequest:
       type: object
       required: 
