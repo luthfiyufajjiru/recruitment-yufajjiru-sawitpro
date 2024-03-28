@@ -1,17 +1,12 @@
-/**
-  This is the SQL script that will be used to initialize the database schema.
-  We will evaluate you based on how well you design your database.
-  1. How you design the tables.
-  2. How you choose the data types and keys.
-  3. How you name the fields.
-  In this assignment we will use PostgreSQL as the database.
-  */
+CREATE SCHEMA IF NOT EXISTS core;
 
-/** This is test table. Remove this table and replace with your own tables. */
-CREATE TABLE test (
-	id serial PRIMARY KEY,
-	name VARCHAR ( 50 ) UNIQUE NOT NULL,
+CREATE TABLE core.users (
+  id serial PRIMARY KEY,
+  name varchar(60),
+  phone_number varchar(13),
+  password_hash bytea,
+  password_salt bytea
 );
 
-INSERT INTO test (name) VALUES ('test1');
-INSERT INTO test (name) VALUES ('test2');
+CREATE INDEX ix_users_phone_number ON core.users USING btree (phone_number);
+CREATE INDEX ix_users_name ON core.users USING btree (name);
