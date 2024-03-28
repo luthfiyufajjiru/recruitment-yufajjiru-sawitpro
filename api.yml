@@ -25,7 +25,7 @@ paths:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/UserRegistrationRequest"
+              $ref: "#/components/schemas/BasicUserCredentialRequest"
       responses:
         '200':
           description: registration succeed
@@ -45,9 +45,37 @@ paths:
             application/json:    
               schema:
                 $ref: "#/components/schemas/MessageResponse"
+  /login:
+    post:
+      summary: This is an endpoint for user login
+      operationId: login
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/BasicUserCredentialRequest"
+      responses:
+        '200':
+          description: login succeed
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/JWTTokens"
+        '400':
+          description: login failed
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        '500':
+          description: login failed - internal server error
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
 components:
   schemas:
-    UserRegistrationRequest:
+    BasicUserCredentialRequest:
       type: object
       required: 
         - username
@@ -65,4 +93,13 @@ components:
         - message
       properties:
         message:
+          type: string
+    JWTTokens:
+      type: object
+      properties:
+        access_token:
+          description: this token is to access server's resources
+          type: string
+        refresh_token:
+          description: this token is to regain your access token
           type: string
