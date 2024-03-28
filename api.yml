@@ -73,6 +73,78 @@ paths:
             application/json:    
               schema:
                 $ref: "#/components/schemas/MessageResponse"
+  /profile:
+    get:
+      summary: This is an endpoint to get user profile
+      operationId: getProfile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: get profile succeed
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/UserProfilePresenter"
+        '400':
+          description: get profile failed
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        '403':
+          description: token invalid
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        '500':
+          description: get profile failed - internal server error
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+    patch:
+      summary: This is an endpoint for update user profile
+      operationId: patchProfile
+      security:
+        - bearerAuth: []
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: "#/components/schemas/UserProfilePresenter"
+      responses:
+        '200':
+          description: login succeed
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/JWTTokens"
+        '400':
+          description: login failed
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        '403':
+          description: token invalid
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        '409':
+          description: update conflict
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
+        '500':
+          description: login failed - internal server error
+          content:
+            application/json:    
+              schema:
+                $ref: "#/components/schemas/MessageResponse"
 components:
   schemas:
     BasicUserCredentialRequest:
@@ -103,3 +175,17 @@ components:
         refresh_token:
           description: this token is to regain your access token
           type: string
+    UserProfilePresenter:
+      type: object
+      properties:
+        phone_number:
+          description: this is users phone number
+          type: string
+        name:
+          description: this users full name
+          type: string
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
