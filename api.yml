@@ -25,7 +25,7 @@ paths:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/BasicUserCredentialRequest"
+              $ref: "#/components/schemas/UserRegistrationRequest"
       responses:
         '200':
           description: registration succeed
@@ -53,7 +53,7 @@ paths:
         content:
           application/x-www-form-urlencoded:
             schema:
-              $ref: "#/components/schemas/BasicUserCredentialRequest"
+              $ref: "#/components/schemas/UserLoginRequest"
       responses:
         '200':
           description: login succeed
@@ -147,14 +147,30 @@ paths:
                 $ref: "#/components/schemas/MessageResponse"
 components:
   schemas:
-    BasicUserCredentialRequest:
+    UserRegistrationRequest:
       type: object
       required: 
-        - username
+        - phone_number
+        - password
+        - name
+      properties:
+        phone_number:
+          description: the phone number of the user
+          type: string
+        password:
+          description: the password of the user
+          type: string
+        name:
+          description: the full name of the user
+          type: string
+    UserLoginRequest:
+      type: object
+      required: 
+        - phone_number
         - password
       properties:
-        username:
-          description: username of the user
+        phone_number:
+          description: a phone number of the user
           type: string
         password:
           description: password of the user
