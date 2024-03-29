@@ -1,10 +1,10 @@
 // This file contains types that are used in the repository layer.
 package repository
 
-type GetTestByIdInput struct {
-	Id string
-}
-
-type GetTestByIdOutput struct {
-	Name string
-}
+type (
+	UserModel struct {
+		Id          int    `db:"id"`
+		Name        string `db:"name"`
+		PhoneNumber string `db:"phone_number"`
+	}
+)

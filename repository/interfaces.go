@@ -3,15 +3,12 @@ package repository
 import (
 	"context"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/SawitProRecruitment/UserService/generated"
 )
 
 type RepositoryInterface interface {
+	GetProfile(ctx context.Context, user_id int) (profile generated.UserProfilePresenter, err error)
+	SetProfile(ctx context.Context, inp generated.UserRegistrationRequest) (resp generated.UserRegistrationResponse, err error)
 	UpdateProfile(ctx context.Context, user_id int) (err error)
-	GetProfile(ctx context.Context, user_id int) (err error)
 	ComparePassword(ctx context.Context, phone_number, password string) (err error)
-	SignJWTToken(cl jwt.MapClaims, key []byte) (tokenStr string, err error)
-	GenJWTTokens(user_id int, name string) (accessTokenStr, refreshTokenStr string, err error)
-	GetClaims(tokenStr string, key []byte) (claims jwt.MapClaims, valid bool)
-	RefreshToken(token string) (accesstoken string, err error)
 }

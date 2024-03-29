@@ -8,7 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
-	v5 "github.com/golang-jwt/jwt/v5"
+	generated "github.com/SawitProRecruitment/UserService/generated"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -49,43 +49,13 @@ func (mr *MockRepositoryInterfaceMockRecorder) ComparePassword(ctx, phone_number
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ComparePassword", reflect.TypeOf((*MockRepositoryInterface)(nil).ComparePassword), ctx, phone_number, password)
 }
 
-// GenJWTTokens mocks base method.
-func (m *MockRepositoryInterface) GenJWTTokens(user_id int, name string) (string, string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GenJWTTokens", user_id, name)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// GenJWTTokens indicates an expected call of GenJWTTokens.
-func (mr *MockRepositoryInterfaceMockRecorder) GenJWTTokens(user_id, name interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GenJWTTokens", reflect.TypeOf((*MockRepositoryInterface)(nil).GenJWTTokens), user_id, name)
-}
-
-// GetClaims mocks base method.
-func (m *MockRepositoryInterface) GetClaims(tokenStr string, key []byte) (v5.MapClaims, bool) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetClaims", tokenStr, key)
-	ret0, _ := ret[0].(v5.MapClaims)
-	ret1, _ := ret[1].(bool)
-	return ret0, ret1
-}
-
-// GetClaims indicates an expected call of GetClaims.
-func (mr *MockRepositoryInterfaceMockRecorder) GetClaims(tokenStr, key interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetClaims", reflect.TypeOf((*MockRepositoryInterface)(nil).GetClaims), tokenStr, key)
-}
-
 // GetProfile mocks base method.
-func (m *MockRepositoryInterface) GetProfile(ctx context.Context, user_id int) error {
+func (m *MockRepositoryInterface) GetProfile(ctx context.Context, user_id int) (generated.UserProfilePresenter, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetProfile", ctx, user_id)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(generated.UserProfilePresenter)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // GetProfile indicates an expected call of GetProfile.
@@ -94,49 +64,19 @@ func (mr *MockRepositoryInterfaceMockRecorder) GetProfile(ctx, user_id interface
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetProfile", reflect.TypeOf((*MockRepositoryInterface)(nil).GetProfile), ctx, user_id)
 }
 
-// GetTestById mocks base method.
-func (m *MockRepositoryInterface) GetTestById(ctx context.Context, input GetTestByIdInput) (GetTestByIdOutput, error) {
+// SetProfile mocks base method.
+func (m *MockRepositoryInterface) SetProfile(ctx context.Context, inp generated.UserRegistrationRequest) (generated.UserRegistrationResponse, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetTestById", ctx, input)
-	ret0, _ := ret[0].(GetTestByIdOutput)
+	ret := m.ctrl.Call(m, "SetProfile", ctx, inp)
+	ret0, _ := ret[0].(generated.UserRegistrationResponse)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetTestById indicates an expected call of GetTestById.
-func (mr *MockRepositoryInterfaceMockRecorder) GetTestById(ctx, input interface{}) *gomock.Call {
+// SetProfile indicates an expected call of SetProfile.
+func (mr *MockRepositoryInterfaceMockRecorder) SetProfile(ctx, inp interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTestById", reflect.TypeOf((*MockRepositoryInterface)(nil).GetTestById), ctx, input)
-}
-
-// RefreshToken mocks base method.
-func (m *MockRepositoryInterface) RefreshToken(token string) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RefreshToken", token)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// RefreshToken indicates an expected call of RefreshToken.
-func (mr *MockRepositoryInterfaceMockRecorder) RefreshToken(token interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RefreshToken", reflect.TypeOf((*MockRepositoryInterface)(nil).RefreshToken), token)
-}
-
-// SignJWTToken mocks base method.
-func (m *MockRepositoryInterface) SignJWTToken(cl v5.MapClaims, key []byte) (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SignJWTToken", cl, key)
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SignJWTToken indicates an expected call of SignJWTToken.
-func (mr *MockRepositoryInterfaceMockRecorder) SignJWTToken(cl, key interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignJWTToken", reflect.TypeOf((*MockRepositoryInterface)(nil).SignJWTToken), cl, key)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetProfile", reflect.TypeOf((*MockRepositoryInterface)(nil).SetProfile), ctx, inp)
 }
 
 // UpdateProfile mocks base method.
