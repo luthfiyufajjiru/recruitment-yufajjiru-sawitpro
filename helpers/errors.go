@@ -1,6 +1,9 @@
 package helpers
 
-import "strconv"
+import (
+	"errors"
+	"strconv"
+)
 
 type (
 	ErrorCodes string
@@ -8,14 +11,14 @@ type (
 
 const baseDigit = 16
 
-func (ec ErrorCodes) UserRegistrationError() string {
-	return strconv.FormatUint(1, baseDigit)
+func (ec ErrorCodes) UserRegistrationError() error {
+	return errors.New(strconv.FormatUint(1, baseDigit))
 }
 
-func (ec ErrorCodes) LoginError() string {
-	return strconv.FormatUint(2, baseDigit)
+func (ec ErrorCodes) LoginError() error {
+	return errors.New(strconv.FormatUint(2, baseDigit))
 }
 
-func (ec ErrorCodes) UpdateProfileError() string {
-	return strconv.FormatUint(3, baseDigit)
+func (ec ErrorCodes) UpdateProfileError() error {
+	return errors.New(strconv.FormatUint(3, baseDigit))
 }
