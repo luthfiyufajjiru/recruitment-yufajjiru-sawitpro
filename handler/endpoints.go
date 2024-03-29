@@ -1,18 +1,28 @@
 package handler
 
 import (
-	"fmt"
 	"net/http"
 
-	"github.com/SawitProRecruitment/UserService/generated"
+	"github.com/SawitProRecruitment/UserService/helpers"
 	"github.com/labstack/echo/v4"
 )
 
-// This is just a test endpoint to get you started. Please delete this endpoint.
-// (GET /hello)
-func (s *Server) Hello(ctx echo.Context, params generated.HelloParams) error {
+// (POST /registration)
+func (s *Server) Register(ctx echo.Context) error {
+	return ctx.String(http.StatusNotImplemented, helpers.DRNotImplemented)
+}
 
-	var resp generated.HelloResponse
-	resp.Message = fmt.Sprintf("Hello User %d", params.Id)
-	return ctx.JSON(http.StatusOK, resp)
+// (POST /login)
+func (s *Server) Login(ctx echo.Context) error {
+	return ctx.String(http.StatusNotImplemented, helpers.DRNotImplemented)
+}
+
+// (GET /profile)
+func (s *Server) GetProfile(ctx echo.Context) error {
+	return ctx.String(http.StatusNotImplemented, helpers.DRNotImplemented)
+}
+
+// (PATCH /profile)
+func (s *Server) PatchProfile(ctx echo.Context) error {
+	return ctx.String(http.StatusNotImplemented, helpers.DRNotImplemented)
 }
