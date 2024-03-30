@@ -57,7 +57,7 @@ func TestRegistration(t *testing.T) {
 				Password:    "",
 			},
 			output: generated.MessageResponse{
-				Message: fmt.Errorf(`Phone numbers must start with the Indonesia country code "+62". Phone numbers must be at minimum 10 characters and maximum 13 characters. Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 capital characters AND 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errorIndex.LoginError).Error(),
+				Message: fmt.Errorf(`Phone numbers must start with the Indonesia country code "+62". Phone numbers must be at minimum 10 characters and maximum 13 characters. Phone numbers must be a number. Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 capital characters AND 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errorIndex.LoginError).Error(),
 			},
 			statusCode: http.StatusBadRequest,
 			repoReturn: []interface{}{
