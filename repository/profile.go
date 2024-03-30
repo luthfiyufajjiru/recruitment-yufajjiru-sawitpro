@@ -80,7 +80,44 @@ func (r *Repository) SetProfile(ctx context.Context, inp generated.UserRegistrat
 }
 
 func (r *Repository) UpdateProfile(ctx context.Context, user_id int, inp generated.UserProfilePresenter) (err error) {
-	panic("unimplemented")
+	if inp.PhoneNumber == nil && inp.Name == nil {
+		err = errorIndex.ErrInvalidRequest
+		return
+	}
+
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	query := psql.Update(`"core"."users"`)
+
+	if inp.PhoneNumber != nil {
+		query = query.Set("phone_number", inp.PhoneNumber)
+	}
+
+	if inp.Name != nil {
+		query = query.Set("name", inp.Name)
+	}
+
+	query = query.Where(`"id" = ?`, user_id)
+
+	queryStr, args, err := query.ToSql()
+	if err != nil {
+		log.Errorf("(%w) - %w", errorIndex.DevelopmentError, err)
+		err = errorIndex.ErrQueryBuilder
+		return
+	}
+
+	var pqErr *pq.Error
+	_, err = r.Db.ExecContext(ctx, queryStr, args...)
+	errors.As(err, &pqErr)
+	if err != nil && pqErr != nil && pqErr.Code.Class() == IntegrityViolationClassCode {
+		err = errorIndex.ErrPhoneNumberExist
+		return
+	} else if err != nil {
+		log.Errorf(`(%w) - %w`, errorIndex.UpdateProfileError, err)
+		return
+	}
+
+	return
 }
 
 func (r *Repository) ComparePassword(ctx context.Context, phone_number string, password string) (err error) {
