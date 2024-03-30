@@ -17,7 +17,7 @@ func TestParseKey(t *testing.T) {
 }
 
 func TestGenerateKey(t *testing.T) {
-	Initialize(keyStr, keyStr, "10s", "10s")
+	InitializeJWT(keyStr, keyStr, "10s", "10s")
 
 	userId := 1
 	userName := "foo"
@@ -37,7 +37,7 @@ func TestGenerateKey(t *testing.T) {
 }
 
 func TestClaim(t *testing.T) {
-	Initialize(keyStr, keyStr, "10s", "10s")
+	InitializeJWT(keyStr, keyStr, "10s", "10s")
 
 	userId := 1
 	userName := "foo"
@@ -56,7 +56,7 @@ func TestClaim(t *testing.T) {
 }
 
 func TestRefreshToken(t *testing.T) {
-	Initialize(keyStr, keyStr, "10s", "10s")
+	InitializeJWT(keyStr, keyStr, "10s", "10s")
 
 	userId := 1
 	userName := "foo"

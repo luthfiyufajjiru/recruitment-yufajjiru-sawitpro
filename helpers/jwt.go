@@ -31,7 +31,7 @@ func ParsePrivateKey(storedPrivKeyStr string) (privKey *rsa.PrivateKey, pubKey *
 	return
 }
 
-func Initialize(privateKeyAccessTokenStr, privateKeyRefreshTokenStr, accessTimeoutStr, refreshDurationStr string) {
+func InitializeJWT(privateKeyAccessTokenStr, privateKeyRefreshTokenStr, accessTimeoutStr, refreshDurationStr string) {
 	if val, err := time.ParseDuration(accessTimeoutStr); err == nil {
 		accessTimeDuration = val
 	} else if err != nil {
