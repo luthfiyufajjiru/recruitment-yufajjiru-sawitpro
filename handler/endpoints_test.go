@@ -160,6 +160,8 @@ func TestRegistration(t *testing.T) {
 
 		payload := bytes.NewBuffer([]byte(fmt.Sprintf(`{"phone_number":"%s", "name":"%s", "password":"%s"}`, expectation.input.PhoneNumber, expectation.input.Name, expectation.input.Password)))
 		req := httptest.NewRequest(http.MethodPost, "/register", payload)
+		req.Header.Set("content-type", "application/x-www-form-urlencoded")
+
 		c := e.NewContext(req, rec)
 
 		repo := repository.NewMockRepositoryInterface(ctrl)
