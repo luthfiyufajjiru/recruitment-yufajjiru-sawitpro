@@ -183,7 +183,7 @@ components:
       properties:
         user_id:
           description: this is the returned id of the user after registration
-          type: number
+          type: integer
     UserLoginRequest:
       type: object
       required: 
