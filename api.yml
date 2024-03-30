@@ -131,13 +131,13 @@ paths:
               $ref: "#/components/schemas/UserProfilePresenter"
       responses:
         '200':
-          description: login succeed
+          description: update succeed
           content:
             application/json:    
               schema:
-                $ref: "#/components/schemas/JWTTokens"
+                $ref: "#/components/schemas/MessageResponse"
         '400':
-          description: login failed
+          description: update failed - invalid payload
           content:
             application/json:    
               schema:
@@ -155,7 +155,7 @@ paths:
               schema:
                 $ref: "#/components/schemas/MessageResponse"
         '500':
-          description: login failed - internal server error
+          description: update failed - internal server error
           content:
             application/json:    
               schema:
