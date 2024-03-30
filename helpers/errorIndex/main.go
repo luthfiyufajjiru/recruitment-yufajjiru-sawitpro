@@ -23,7 +23,8 @@ var (
 	ErrHashingContent   = errors.New("error when hashing content")
 	ErrPhoneNumberExist = errors.New("phone number already registered")
 
-	ErrInvalidRequest = errors.New("invalid request")
+	ErrInvalidRequest  = errors.New("invalid request")
+	ErrInvalidPassword = errors.New("invalid password")
 )
 
 var (

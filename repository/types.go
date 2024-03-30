@@ -7,4 +7,10 @@ type (
 		Name        string `db:"name"`
 		PhoneNumber string `db:"phone_number"`
 	}
+
+	UserCredentialModel struct {
+		Id           int    `db:"id"`
+		PasswordHash []byte `db:"password_hash"`
+		PasswordSalt []byte `db:"password_salt"`
+	}
 )
