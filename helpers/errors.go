@@ -22,3 +22,7 @@ func (ec ErrorCodes) LoginError() error {
 func (ec ErrorCodes) UpdateProfileError() error {
 	return errors.New(strconv.FormatUint(3, baseDigit))
 }
+
+func (ec ErrorCodes) DevelopmentError() error {
+	return errors.New(strconv.FormatUint(4, baseDigit))
+}
