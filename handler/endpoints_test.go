@@ -18,6 +18,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+type expectation[T generated.UserRegistrationRequest | generated.UserLoginRequest] struct {
+	input      T
+	output     interface{}
+	statusCode int
+	repoReturn []interface{}
+}
+
 // Test rules:
 // 1. Phone numbers must be at minimum 10 characters and maximum 13 characters.
 // 2. Phone numbers must start with the Indonesia country code “+62”.
@@ -28,19 +35,12 @@ import (
 // 5. Otherwise, return 400 Bad Requests with the error message containing ALL fields that
 // failed the validation and which rule they failed at.
 func TestRegistration(t *testing.T) {
-	type expectation struct {
-		input      generated.UserRegistrationRequest
-		output     interface{}
-		statusCode int
-		repoReturn []interface{}
-	}
-
 	var (
 		id   = 1
 		ctrl = gomock.NewController(t)
 	)
 
-	expectations := []expectation{
+	expectations := []expectation[generated.UserRegistrationRequest]{
 		{
 			input: generated.UserRegistrationRequest{
 				Name:        "fulan",
