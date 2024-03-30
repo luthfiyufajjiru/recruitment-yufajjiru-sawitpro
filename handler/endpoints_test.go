@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	"github.com/SawitProRecruitment/UserService/generated"
-	"github.com/SawitProRecruitment/UserService/helpers"
+	"github.com/SawitProRecruitment/UserService/helpers/errorIndex"
 	"github.com/SawitProRecruitment/UserService/helpers/pgerrcode"
 	"github.com/SawitProRecruitment/UserService/repository"
 	"github.com/golang/mock/gomock"
@@ -36,9 +36,8 @@ func TestRegistration(t *testing.T) {
 	}
 
 	var (
-		id       = float32(2)
-		ctrl     = gomock.NewController(t)
-		errCodes helpers.ErrorCodes
+		id   = 1
+		ctrl = gomock.NewController(t)
 	)
 
 	expectations := []expectation{
@@ -49,7 +48,7 @@ func TestRegistration(t *testing.T) {
 				Password:    "",
 			},
 			output: generated.MessageResponse{
-				Message: fmt.Errorf(`Phone numbers must start with the Indonesia country code "+62". Phone numbers must be at minimum 10 characters and maximum 13 characters. Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 capital characters AND 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errCodes.LoginError()).Error(),
+				Message: fmt.Errorf(`Phone numbers must start with the Indonesia country code "+62". Phone numbers must be at minimum 10 characters and maximum 13 characters. Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 capital characters AND 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errorIndex.LoginError).Error(),
 			},
 			statusCode: http.StatusBadRequest,
 			repoReturn: []interface{}{
@@ -64,7 +63,7 @@ func TestRegistration(t *testing.T) {
 				Password:    "",
 			},
 			output: generated.MessageResponse{
-				Message: fmt.Errorf(`Phone numbers must be at minimum 10 characters and maximum 13 characters. Phone numbers must be a number. Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 capital characters AND 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errCodes.LoginError()).Error(),
+				Message: fmt.Errorf(`Phone numbers must be at minimum 10 characters and maximum 13 characters. Phone numbers must be a number. Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 capital characters AND 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errorIndex.LoginError).Error(),
 			},
 			statusCode: http.StatusBadRequest,
 			repoReturn: []interface{}{
@@ -79,7 +78,7 @@ func TestRegistration(t *testing.T) {
 				Password:    "T",
 			},
 			output: generated.MessageResponse{
-				Message: fmt.Errorf(`Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errCodes.LoginError()).Error(),
+				Message: fmt.Errorf(`Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errorIndex.LoginError).Error(),
 			},
 			statusCode: http.StatusBadRequest,
 			repoReturn: []interface{}{
@@ -94,7 +93,7 @@ func TestRegistration(t *testing.T) {
 				Password:    "T1",
 			},
 			output: generated.MessageResponse{
-				Message: fmt.Errorf(`Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 special (non alpha-numeric) characters. Error codes:%w`, errCodes.LoginError()).Error(),
+				Message: fmt.Errorf(`Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 special (non alpha-numeric) characters. Error codes:%w`, errorIndex.LoginError).Error(),
 			},
 			statusCode: http.StatusBadRequest,
 			repoReturn: []interface{}{
@@ -109,7 +108,7 @@ func TestRegistration(t *testing.T) {
 				Password:    "T1!",
 			},
 			output: generated.MessageResponse{
-				Message: fmt.Errorf(`Passwords must be minimum 6 characters and maximum 64 characters. Error codes:%w`, errCodes.LoginError()).Error(),
+				Message: fmt.Errorf(`Passwords must be minimum 6 characters and maximum 64 characters. Error codes:%w`, errorIndex.LoginError).Error(),
 			},
 			statusCode: http.StatusBadRequest,
 			repoReturn: []interface{}{
@@ -124,7 +123,7 @@ func TestRegistration(t *testing.T) {
 				Password:    "T1!foo",
 			},
 			output: generated.MessageResponse{
-				Message: fmt.Errorf(`User already registered. Error codes:%w`, errCodes.LoginError()).Error(),
+				Message: fmt.Errorf(`User already registered. Error codes:%w`, errorIndex.LoginError).Error(),
 			},
 			statusCode: http.StatusBadRequest,
 			repoReturn: []interface{}{
