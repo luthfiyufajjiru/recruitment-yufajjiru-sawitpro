@@ -3,7 +3,7 @@ CREATE SCHEMA IF NOT EXISTS core;
 CREATE TABLE core.users (
   id serial PRIMARY KEY,
   name varchar(60),
-  phone_number varchar(13),
+  phone_number varchar(13) UNIQUE,
   password_hash bytea,
   password_salt bytea
 );
