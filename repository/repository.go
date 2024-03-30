@@ -8,13 +8,11 @@ import (
 )
 
 type Repository struct {
-	Db      *sql.DB
-	HMACKey []byte
+	Db *sql.DB
 }
 
 type NewRepositoryOptions struct {
-	Dsn     string
-	HMACKey []byte
+	Dsn string
 }
 
 func NewRepository(opts NewRepositoryOptions) *Repository {
@@ -23,7 +21,6 @@ func NewRepository(opts NewRepositoryOptions) *Repository {
 		panic(err)
 	}
 	return &Repository{
-		Db:      db,
-		HMACKey: opts.HMACKey,
+		Db: db,
 	}
 }

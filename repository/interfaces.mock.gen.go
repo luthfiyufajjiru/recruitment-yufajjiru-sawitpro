@@ -80,15 +80,15 @@ func (mr *MockRepositoryInterfaceMockRecorder) SetProfile(ctx, inp interface{}) 
 }
 
 // UpdateProfile mocks base method.
-func (m *MockRepositoryInterface) UpdateProfile(ctx context.Context, user_id int) error {
+func (m *MockRepositoryInterface) UpdateProfile(ctx context.Context, user_id int, inp generated.UserProfilePresenter) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateProfile", ctx, user_id)
+	ret := m.ctrl.Call(m, "UpdateProfile", ctx, user_id, inp)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // UpdateProfile indicates an expected call of UpdateProfile.
-func (mr *MockRepositoryInterfaceMockRecorder) UpdateProfile(ctx, user_id interface{}) *gomock.Call {
+func (mr *MockRepositoryInterfaceMockRecorder) UpdateProfile(ctx, user_id, inp interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockRepositoryInterface)(nil).UpdateProfile), ctx, user_id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateProfile", reflect.TypeOf((*MockRepositoryInterface)(nil).UpdateProfile), ctx, user_id, inp)
 }

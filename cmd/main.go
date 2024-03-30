@@ -21,7 +21,6 @@ func main() {
 
 func newServer() *handler.Server {
 	dbDsn := os.Getenv("DATABASE_URL")
-	hmacKey := []byte(os.Getenv("SECREET_KEY"))
 	privKeyAccessTokenStr := os.Getenv("ACCESS_TOKEN_KEY")
 	privKeyRefreshTokenStr := os.Getenv("REFRESH_TOKEN_KEY")
 	accessTokenExpiration := os.Getenv("ACCESS_TOKEN_EXPIRATION")
@@ -29,8 +28,7 @@ func newServer() *handler.Server {
 	helpers.InitializeJWT(privKeyAccessTokenStr, privKeyRefreshTokenStr, accessTokenExpiration, refreshTokenDuration)
 
 	var repo repository.RepositoryInterface = repository.NewRepository(repository.NewRepositoryOptions{
-		Dsn:     dbDsn,
-		HMACKey: hmacKey,
+		Dsn: dbDsn,
 	})
 
 	opts := handler.NewServerOptions{

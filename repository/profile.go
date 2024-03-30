@@ -14,7 +14,7 @@ func (r *Repository) SetProfile(ctx context.Context, inp generated.UserRegistrat
 	panic("unimplemented")
 }
 
-func (r *Repository) UpdateProfile(ctx context.Context, user_id int) (err error) {
+func (r *Repository) UpdateProfile(ctx context.Context, user_id int, inp generated.UserProfilePresenter) (err error) {
 	panic("unimplemented")
 }
 
