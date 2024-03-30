@@ -18,6 +18,8 @@ var (
 	ErrParsingPublicKey    = errors.New("error when parsing public key")
 
 	ErrInvalidKeySize = errors.New("invalid key size")
+
+	ErrQueryBuilder = errors.New("error when building query")
 )
 
 var (
