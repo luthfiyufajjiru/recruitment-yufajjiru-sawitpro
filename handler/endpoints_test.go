@@ -10,9 +10,11 @@ import (
 
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/helpers"
+	"github.com/SawitProRecruitment/UserService/helpers/pgerrcode"
 	"github.com/SawitProRecruitment/UserService/repository"
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -34,6 +36,7 @@ func TestRegistration(t *testing.T) {
 	}
 
 	var (
+		id       = float32(2)
 		ctrl     = gomock.NewController(t)
 		errCodes helpers.ErrorCodes
 	)
@@ -51,6 +54,100 @@ func TestRegistration(t *testing.T) {
 			statusCode: http.StatusBadRequest,
 			repoReturn: []interface{}{
 				generated.UserRegistrationResponse{},
+				nil,
+			},
+		},
+		{
+			input: generated.UserRegistrationRequest{
+				Name:        "fulan",
+				PhoneNumber: "+62AA",
+				Password:    "",
+			},
+			output: generated.MessageResponse{
+				Message: fmt.Errorf(`Phone numbers must be at minimum 10 characters and maximum 13 characters. Phone numbers must be a number. Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 capital characters AND 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errCodes.LoginError()).Error(),
+			},
+			statusCode: http.StatusBadRequest,
+			repoReturn: []interface{}{
+				generated.UserRegistrationResponse{},
+				nil,
+			},
+		},
+		{
+			input: generated.UserRegistrationRequest{
+				Name:        "fulan",
+				PhoneNumber: "+6288888888888",
+				Password:    "T",
+			},
+			output: generated.MessageResponse{
+				Message: fmt.Errorf(`Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errCodes.LoginError()).Error(),
+			},
+			statusCode: http.StatusBadRequest,
+			repoReturn: []interface{}{
+				generated.UserRegistrationResponse{},
+				nil,
+			},
+		},
+		{
+			input: generated.UserRegistrationRequest{
+				Name:        "fulan",
+				PhoneNumber: "+6288888888888",
+				Password:    "T1",
+			},
+			output: generated.MessageResponse{
+				Message: fmt.Errorf(`Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 special (non alpha-numeric) characters. Error codes:%w`, errCodes.LoginError()).Error(),
+			},
+			statusCode: http.StatusBadRequest,
+			repoReturn: []interface{}{
+				generated.UserRegistrationResponse{},
+				nil,
+			},
+		},
+		{
+			input: generated.UserRegistrationRequest{
+				Name:        "fulan",
+				PhoneNumber: "+6288888888888",
+				Password:    "T1!",
+			},
+			output: generated.MessageResponse{
+				Message: fmt.Errorf(`Passwords must be minimum 6 characters and maximum 64 characters. Error codes:%w`, errCodes.LoginError()).Error(),
+			},
+			statusCode: http.StatusBadRequest,
+			repoReturn: []interface{}{
+				generated.UserRegistrationResponse{},
+				nil,
+			},
+		},
+		{
+			input: generated.UserRegistrationRequest{
+				Name:        "fulan",
+				PhoneNumber: "+6288888888888",
+				Password:    "T1!foo",
+			},
+			output: generated.MessageResponse{
+				Message: fmt.Errorf(`User already registered. Error codes:%w`, errCodes.LoginError()).Error(),
+			},
+			statusCode: http.StatusBadRequest,
+			repoReturn: []interface{}{
+				generated.UserRegistrationResponse{},
+				pq.Error{
+					Code: pgerrcode.UniqueViolation, // simulate the phone number is registered
+				},
+			},
+		},
+		{
+			input: generated.UserRegistrationRequest{
+				Name:        "fulan",
+				PhoneNumber: "+6288888888888",
+				Password:    "T1!foo",
+			},
+			output: generated.UserRegistrationResponse{
+				UserId: &id,
+			},
+			statusCode: http.StatusBadRequest,
+			repoReturn: []interface{}{
+				generated.UserRegistrationResponse{
+					UserId: &id,
+				},
 				nil,
 			},
 		},
