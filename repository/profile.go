@@ -7,13 +7,16 @@ import (
 
 	sq "github.com/Masterminds/squirrel"
 	"github.com/SawitProRecruitment/UserService/generated"
+	"github.com/SawitProRecruitment/UserService/helpers"
 	"github.com/SawitProRecruitment/UserService/helpers/errorIndex"
 	"github.com/labstack/gommon/log"
+	"github.com/lib/pq"
 )
 
 func (r *Repository) GetProfile(ctx context.Context, user_id int) (profile generated.UserProfilePresenter, err error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query := psql.Select(`"core"."name"`, `"core"."phone_number"`).Where("id = ?", user_id)
+	query := psql.Select(`"core"."name"`, `"core"."phone_number"`).
+		From(`"core"."users"`).Where("id = ?", user_id)
 
 	queryStr, args, err := query.ToSql()
 	if err != nil {
@@ -38,7 +41,42 @@ func (r *Repository) GetProfile(ctx context.Context, user_id int) (profile gener
 }
 
 func (r *Repository) SetProfile(ctx context.Context, inp generated.UserRegistrationRequest) (resp generated.UserRegistrationResponse, err error) {
-	panic("unimplemented")
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	hashedPass, encryptedSalt, err := helpers.HashStringWithEncryptedSalt(inp.Password, r.SaltSize, r.SecretKey)
+	if err != nil {
+		log.Errorf("(%w) - %w", errorIndex.UserRegistrationError, err)
+		err = errorIndex.ErrHashingContent
+		return
+	}
+
+	query := psql.Insert(`"core"."users"`).
+		Columns("name", "phone_number", "password_hash", "password_salt").
+		Values(inp.Name, inp.PhoneNumber, hashedPass, encryptedSalt)
+
+	queryStr, args, err := query.ToSql()
+	if err != nil {
+		log.Errorf("(%w) - %w", errorIndex.DevelopmentError, err)
+		err = errorIndex.ErrQueryBuilder
+		return
+	}
+
+	var pqErr *pq.Error
+	res, err := r.Db.ExecContext(ctx, queryStr, args...)
+	errors.As(err, &pqErr)
+
+	if err != nil && pqErr != nil && pqErr.Code.Class() == IntegrityViolationClassCode {
+		err = errorIndex.ErrPhoneNumberExist
+		return
+	} else if err != nil {
+		return
+	}
+
+	_id, _ := res.LastInsertId()
+	id := int(_id)
+
+	resp.UserId = &id
+
+	return
 }
 
 func (r *Repository) UpdateProfile(ctx context.Context, user_id int, inp generated.UserProfilePresenter) (err error) {

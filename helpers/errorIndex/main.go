@@ -19,7 +19,9 @@ var (
 
 	ErrInvalidKeySize = errors.New("invalid key size")
 
-	ErrQueryBuilder = errors.New("error when building query")
+	ErrQueryBuilder     = errors.New("error when building query")
+	ErrHashingContent   = errors.New("error when hashing content")
+	ErrPhoneNumberExist = errors.New("phone number already registered")
 )
 
 var (

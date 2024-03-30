@@ -6,12 +6,20 @@ import (
 	_ "github.com/lib/pq"
 )
 
+const (
+	IntegrityViolationClassCode = "23"
+)
+
 type Repository struct {
-	Db *sqlx.DB
+	Db        *sqlx.DB
+	SaltSize  int
+	SecretKey []byte
 }
 
 type NewRepositoryOptions struct {
-	Dsn string
+	Dsn       string
+	SaltSize  int
+	SecretKey string
 }
 
 func NewRepository(opts NewRepositoryOptions) *Repository {
@@ -20,6 +28,8 @@ func NewRepository(opts NewRepositoryOptions) *Repository {
 		panic(err)
 	}
 	return &Repository{
-		Db: db,
+		Db:        db,
+		SaltSize:  opts.SaltSize,
+		SecretKey: []byte(opts.SecretKey),
 	}
 }
