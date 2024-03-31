@@ -7,16 +7,16 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
+	"strings"
 	"testing"
 
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/helpers"
 	"github.com/SawitProRecruitment/UserService/helpers/errorIndex"
-	"github.com/SawitProRecruitment/UserService/helpers/pgerrcode"
 	"github.com/SawitProRecruitment/UserService/repository"
 	"github.com/golang/mock/gomock"
 	"github.com/labstack/echo/v4"
-	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -57,13 +57,10 @@ func TestRegistration(t *testing.T) {
 				Password:    "",
 			},
 			output: generated.MessageResponse{
-				Message: fmt.Errorf(`Phone numbers must start with the Indonesia country code "+62". Phone numbers must be at minimum 10 characters and maximum 13 characters. Phone numbers must be a number. Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 capital characters AND 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errorIndex.LoginError).Error(),
+				Message: fmt.Errorf(`Phone numbers must be at minimum 10 characters and maximum 13 characters. Phone numbers must start with the Indonesia country code "+62". Phone numbers must be a number. Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 capital characters AND 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errorIndex.UserRegistrationError).Error(),
 			},
 			statusCode: http.StatusBadRequest,
-			repoReturn: []interface{}{
-				generated.UserRegistrationResponse{},
-				nil,
-			},
+			repoReturn: []interface{}{},
 		},
 		{
 			input: generated.UserRegistrationRequest{
@@ -72,13 +69,10 @@ func TestRegistration(t *testing.T) {
 				Password:    "",
 			},
 			output: generated.MessageResponse{
-				Message: fmt.Errorf(`Phone numbers must be at minimum 10 characters and maximum 13 characters. Phone numbers must be a number. Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 capital characters AND 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errorIndex.LoginError).Error(),
+				Message: fmt.Errorf(`Phone numbers must be at minimum 10 characters and maximum 13 characters. Phone numbers must be a number. Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 capital characters AND 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errorIndex.UserRegistrationError).Error(),
 			},
 			statusCode: http.StatusBadRequest,
-			repoReturn: []interface{}{
-				generated.UserRegistrationResponse{},
-				nil,
-			},
+			repoReturn: []interface{}{},
 		},
 		{
 			input: generated.UserRegistrationRequest{
@@ -87,13 +81,10 @@ func TestRegistration(t *testing.T) {
 				Password:    "T",
 			},
 			output: generated.MessageResponse{
-				Message: fmt.Errorf(`Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errorIndex.LoginError).Error(),
+				Message: fmt.Errorf(`Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 number AND 1 special (non alpha-numeric) characters. Error codes:%w`, errorIndex.UserRegistrationError).Error(),
 			},
 			statusCode: http.StatusBadRequest,
-			repoReturn: []interface{}{
-				generated.UserRegistrationResponse{},
-				nil,
-			},
+			repoReturn: []interface{}{},
 		},
 		{
 			input: generated.UserRegistrationRequest{
@@ -102,13 +93,10 @@ func TestRegistration(t *testing.T) {
 				Password:    "T1",
 			},
 			output: generated.MessageResponse{
-				Message: fmt.Errorf(`Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 special (non alpha-numeric) characters. Error codes:%w`, errorIndex.LoginError).Error(),
+				Message: fmt.Errorf(`Passwords must be minimum 6 characters and maximum 64 characters, containing at least 1 special (non alpha-numeric) characters. Error codes:%w`, errorIndex.UserRegistrationError).Error(),
 			},
 			statusCode: http.StatusBadRequest,
-			repoReturn: []interface{}{
-				generated.UserRegistrationResponse{},
-				nil,
-			},
+			repoReturn: []interface{}{},
 		},
 		{
 			input: generated.UserRegistrationRequest{
@@ -117,13 +105,10 @@ func TestRegistration(t *testing.T) {
 				Password:    "T1!",
 			},
 			output: generated.MessageResponse{
-				Message: fmt.Errorf(`Passwords must be minimum 6 characters and maximum 64 characters. Error codes:%w`, errorIndex.LoginError).Error(),
+				Message: fmt.Errorf(`Passwords must be minimum 6 characters and maximum 64 characters. Error codes:%w`, errorIndex.UserRegistrationError).Error(),
 			},
 			statusCode: http.StatusBadRequest,
-			repoReturn: []interface{}{
-				generated.UserRegistrationResponse{},
-				nil,
-			},
+			repoReturn: []interface{}{},
 		},
 		{
 			input: generated.UserRegistrationRequest{
@@ -132,14 +117,12 @@ func TestRegistration(t *testing.T) {
 				Password:    "T1!foo",
 			},
 			output: generated.MessageResponse{
-				Message: fmt.Errorf(`User already registered. Error codes:%w`, errorIndex.LoginError).Error(),
+				Message: helpers.DRPhoneNumberExist,
 			},
-			statusCode: http.StatusBadRequest,
+			statusCode: http.StatusConflict,
 			repoReturn: []interface{}{
 				generated.UserRegistrationResponse{},
-				pq.Error{
-					Code: pgerrcode.UniqueViolation, // simulate the phone number is registered
-				},
+				errorIndex.ErrPhoneNumberExist,
 			},
 		},
 		{
@@ -151,7 +134,7 @@ func TestRegistration(t *testing.T) {
 			output: generated.UserRegistrationResponse{
 				UserId: &id,
 			},
-			statusCode: http.StatusBadRequest,
+			statusCode: http.StatusOK,
 			repoReturn: []interface{}{
 				generated.UserRegistrationResponse{
 					UserId: &id,
@@ -167,14 +150,25 @@ func TestRegistration(t *testing.T) {
 		expectation := expectations[i]
 		rec := httptest.NewRecorder()
 
-		payload := bytes.NewBuffer([]byte(fmt.Sprintf(`{"phone_number":"%s", "name":"%s", "password":"%s"}`, expectation.input.PhoneNumber, expectation.input.Name, expectation.input.Password)))
+		form := make(url.Values)
+		form.Add("phone_number", expectation.input.PhoneNumber)
+		form.Add("name", expectation.input.Name)
+		form.Add("password", expectation.input.Password)
+
+		payload := strings.NewReader(form.Encode())
+
 		req := httptest.NewRequest(http.MethodPost, "/register", payload)
 		req.Header.Set("content-type", "application/x-www-form-urlencoded")
 
 		c := e.NewContext(req, rec)
 
+		isCallRepo := len(expectation.repoReturn) > 0
+
 		repo := repository.NewMockRepositoryInterface(ctrl)
-		repo.EXPECT().SetProfile(c, gomock.Any).Return(expectation.repoReturn...)
+
+		if isCallRepo {
+			repo.EXPECT().SetProfile(gomock.Any(), gomock.Any()).Return(expectation.repoReturn...)
+		}
 
 		s := NewServer(NewServerOptions{
 			Repository: repo,

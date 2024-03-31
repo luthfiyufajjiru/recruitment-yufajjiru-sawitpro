@@ -1,12 +1,14 @@
 package helpers
 
 import (
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"unicode"
 
 	"github.com/SawitProRecruitment/UserService/generated"
+	"github.com/SawitProRecruitment/UserService/helpers/errorIndex"
 )
 
 // Rules:
@@ -17,11 +19,11 @@ import (
 func RegistrationValidator(inp generated.UserRegistrationRequest) (err error) {
 	rules := []string{
 		"Phone numbers must be at minimum 10 characters and maximum 13 characters.",
-		"Phone numbers must start with the Indonesia country code “+62”.",
+		`Phone numbers must start with the Indonesia country code "+62".`,
 		"Phone numbers must be a number.",
 		"Full name must be at minimum 3 characters and maximum 60 characters.",
 		"minimum 6 characters and maximum 64 characters",
-		"containing at least 1 capital characters",
+		"1 capital characters",
 		"1 number",
 		"1 special (non alpha-numeric) characters",
 	}
@@ -33,7 +35,7 @@ func RegistrationValidator(inp generated.UserRegistrationRequest) (err error) {
 		lnPass := len(inp.Password)
 		ctr := 0
 
-		if lnPass < 6 && lnPass > 64 {
+		if lnPass < 6 || lnPass > 64 {
 			content := fmt.Sprintf(" %s", rules[4])
 			sbPass.WriteString(content)
 			ctr++
@@ -43,6 +45,7 @@ func RegistrationValidator(inp generated.UserRegistrationRequest) (err error) {
 			hasUpper     bool
 			hasNumber    bool
 			hasSpecial   bool
+			firstHas     = true
 			specialChars = ",!#"
 		)
 
@@ -59,32 +62,46 @@ func RegistrationValidator(inp generated.UserRegistrationRequest) (err error) {
 		}
 
 		if !hasUpper {
+			if firstHas {
+				sbPass.WriteString(", containing at least")
+			}
 			content := fmt.Sprintf(" %s", rules[5])
 			if ctr > 0 {
-				content = fmt.Sprintf(", %s", rules[5])
+				content = fmt.Sprintf(" %s", rules[5])
 			}
 			sbPass.WriteString(content)
+			firstHas = false
 			ctr++
 		}
 
 		if !hasNumber {
+			if firstHas {
+				sbPass.WriteString(", containing at least")
+			}
 			content := fmt.Sprintf(" %s", rules[6])
-			if ctr > 0 {
+			if ctr > 0 && !firstHas {
 				content = fmt.Sprintf(" AND %s", rules[6])
 			}
 			sbPass.WriteString(content)
+			firstHas = false
 			ctr++
 		}
 
 		if !hasSpecial {
+			if firstHas {
+				sbPass.WriteString(", containing at least")
+			}
 			content := fmt.Sprintf(" %s", rules[7])
-			if ctr > 0 {
+			if ctr > 0 && !firstHas {
 				content = fmt.Sprintf(" AND %s", rules[7])
 			}
+			firstHas = false
 			sbPass.WriteString(content)
 		}
 
-		sbPass.WriteString(".")
+		if sbPass.Len() > 0 {
+			sbPass.WriteString(".")
+		}
 
 		ch <- sbPass.String()
 	}(passValidation)
@@ -98,7 +115,8 @@ func RegistrationValidator(inp generated.UserRegistrationRequest) (err error) {
 		sb.WriteString(rules[0])
 		sb.WriteString(" " + rules[1])
 		sb.WriteString(" " + rules[2])
-	} else if lnPhone < 10 || lnPhone > 13 {
+		ctr++
+	} else if lnPhone < 10 || lnPhone > 14 {
 		sb.WriteString(rules[0])
 		ctr++
 	}
@@ -111,13 +129,15 @@ func RegistrationValidator(inp generated.UserRegistrationRequest) (err error) {
 				content = " " + content
 			}
 			sb.WriteString(content)
+			ctr++
 		}
-	} else if lnPhone < 3 {
+	} else if lnPhone > 0 && lnPhone < 3 {
 		content := rules[1]
 		if ctr > 0 {
 			content = " " + content
 		}
 		sb.WriteString(content)
+		ctr++
 	}
 
 	if lnPhone > 1 {
@@ -135,6 +155,7 @@ func RegistrationValidator(inp generated.UserRegistrationRequest) (err error) {
 		}
 		if nan {
 			sb.WriteString(content)
+			ctr++
 		}
 	}
 
@@ -145,6 +166,7 @@ func RegistrationValidator(inp generated.UserRegistrationRequest) (err error) {
 			content = " " + content
 		}
 		sb.WriteString(content)
+		ctr++
 	}
 
 	passValidationStr := <-passValidation
@@ -155,6 +177,10 @@ func RegistrationValidator(inp generated.UserRegistrationRequest) (err error) {
 		}
 		sb.WriteString(content)
 		sb.WriteString(passValidationStr)
+	}
+
+	if sb.Len() > 0 {
+		err = errors.New(fmt.Sprintf("%s Error codes:%s", sb.String(), errorIndex.UserRegistrationError))
 	}
 
 	return
