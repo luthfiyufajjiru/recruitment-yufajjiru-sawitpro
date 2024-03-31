@@ -3,6 +3,7 @@ package handler
 import (
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/helpers"
@@ -72,7 +73,32 @@ func (s *Server) Login(ctx echo.Context) error {
 
 // (GET /profile)
 func (s *Server) GetProfile(ctx echo.Context) error {
-	return ctx.String(http.StatusNotImplemented, helpers.DRNotImplemented)
+	tokenStr := ctx.Request().Header.Get("authorization")
+	idx := strings.Index(tokenStr, " ")
+	if tokenStr == "" || idx < 0 {
+		return ctx.JSON(http.StatusForbidden, generated.MessageResponse{
+			Message: helpers.DRForbidden,
+		})
+	}
+	tokenStr = tokenStr[idx+1:]
+
+	claims, err := helpers.TokenCheck(ctx, tokenStr)
+	if err != nil {
+		return ctx.JSON(http.StatusForbidden, generated.MessageResponse{
+			Message: helpers.DRForbidden,
+		})
+	}
+
+	userId := int(claims[helpers.ClaimUserId].(float64))
+
+	profile, err := s.Repository.GetProfile(ctx.Request().Context(), userId)
+	if err != nil {
+		ctx.JSON(http.StatusForbidden, generated.MessageResponse{
+			Message: helpers.DRForbidden,
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, profile)
 }
 
 // (PATCH /profile)

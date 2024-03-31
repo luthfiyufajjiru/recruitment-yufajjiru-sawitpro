@@ -9,6 +9,7 @@ const baseDigit = 16
 
 var (
 	ErrInvalidToken        = errors.New("token invalid")
+	ErrExpiredAccessToken  = errors.New("access token expired")
 	ErrExpiredRefreshToken = errors.New("refresh token expired")
 	ErrInvalidRefreshToken = errors.New("refresh token invalid")
 	ErrGenerateJWTToken    = errors.New("error when generating token")

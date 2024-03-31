@@ -6,10 +6,8 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"net/http"
 	"time"
 
-	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/helpers/errorIndex"
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/labstack/echo/v4"
@@ -159,14 +157,17 @@ func RefreshToken(token string) (accesstoken string, err error) {
 	return
 }
 
-func TokenCheck(c echo.Context, token string) (err error) {
-	claims, err := GetClaims(token)
+func TokenCheck(c echo.Context, token string) (claims jwt.MapClaims, err error) {
+	claims, err = GetClaims(token)
 	if err != nil {
-		log.Error(err)
-		return c.JSON(http.StatusForbidden, generated.MessageResponse{
-			Message: DRForbidden,
-		})
+		log.Error(err.Error())
+		return
 	}
-	c.Set("claims", claims)
+
+	expiration := int64(claims[ClaimExpiredAt].(float64))
+	if expiration < time.Now().UnixMilli() {
+		return nil, errorIndex.ErrExpiredAccessToken
+	}
+
 	return
 }

@@ -8,4 +8,5 @@ const (
 	DRUnauthorized        = "unauthorized"
 	DRPhoneNumberExist    = "phone number already exist"
 	DRInternalServerError = "internal server error"
+	TokenExpired          = "token expired"
 )

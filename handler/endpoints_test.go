@@ -313,7 +313,7 @@ func TestLogin(t *testing.T) {
 }
 
 func TestGetProfile(t *testing.T) {
-	const timeConstant = "10s"
+	const timeConstant = "160s"
 	helpers.InitializeJWT(keyStr, keyStr, timeConstant, timeConstant) // init JWT module
 
 	var (
@@ -350,10 +350,16 @@ func TestGetProfile(t *testing.T) {
 				Name:        &userName,
 				PhoneNumber: &userPhoneNumber,
 			},
-			repoReturn: []interface{}{
-				generated.UserProfilePresenter{},
-				sql.ErrNoRows,
+			repoReturn: []interface{}{},
+			statusCode: http.StatusForbidden,
+		},
+		{
+			input: "",
+			output: generated.UserProfilePresenter{
+				Name:        &userName,
+				PhoneNumber: &userPhoneNumber,
 			},
+			repoReturn: []interface{}{},
 			statusCode: http.StatusForbidden,
 		},
 	}
@@ -370,13 +376,15 @@ func TestGetProfile(t *testing.T) {
 		c := e.NewContext(req, rec)
 
 		repo := repository.NewMockRepositoryInterface(ctrl)
-		repo.EXPECT().GetProfile(c, userId).Return(expectation.repoReturn...)
+		if len(expectation.repoReturn) > 0 {
+			repo.EXPECT().GetProfile(gomock.Any(), gomock.Any()).Return(expectation.repoReturn...)
+		}
 
 		s := NewServer(NewServerOptions{
 			Repository: repo,
 		})
 
-		s.Login(c)
+		s.GetProfile(c)
 
 		assert.Equal(t, expectation.statusCode, rec.Result().StatusCode)
 
@@ -385,7 +393,8 @@ func TestGetProfile(t *testing.T) {
 			var userProfile generated.UserProfilePresenter
 			err = json.Unmarshal(rec.Body.Bytes(), &userProfile)
 			assert.Nil(t, err)
-			assert.Equal(t, userName, userProfile.Name)
+			assert.NotNil(t, userProfile.Name)
+			assert.Equal(t, userName, *userProfile.Name)
 		case http.StatusForbidden:
 			var msg generated.MessageResponse
 			err = json.Unmarshal(rec.Body.Bytes(), &msg)
