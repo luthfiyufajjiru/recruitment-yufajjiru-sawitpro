@@ -6,10 +6,13 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"net/http"
 	"time"
 
+	"github.com/SawitProRecruitment/UserService/generated"
 	"github.com/SawitProRecruitment/UserService/helpers/errorIndex"
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo/v4"
 	"github.com/labstack/gommon/log"
 )
 
@@ -17,6 +20,12 @@ var (
 	accessTimeDuration, refreshTimeDuration       time.Duration
 	privateKeyAccessToken, privateKeyRefreshToken *rsa.PrivateKey
 	publicKeyAccessToken                          *rsa.PublicKey
+)
+
+const (
+	ClaimUser      = "name"
+	ClaimUserId    = "user_id"
+	ClaimExpiredAt = "expired_at"
 )
 
 func ParsePrivateKey(storedPrivKeyStr string) (privKey *rsa.PrivateKey, pubKey *rsa.PublicKey, err error) {
@@ -147,5 +156,17 @@ func RefreshToken(token string) (accesstoken string, err error) {
 		return
 	}
 
+	return
+}
+
+func TokenCheck(c echo.Context, token string) (err error) {
+	claims, err := GetClaims(token)
+	if err != nil {
+		log.Error(err)
+		return c.JSON(http.StatusForbidden, generated.MessageResponse{
+			Message: DRForbidden,
+		})
+	}
+	c.Set("claims", claims)
 	return
 }
