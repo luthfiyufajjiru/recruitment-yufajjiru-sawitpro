@@ -51,7 +51,7 @@ func (r *Repository) SetProfile(ctx context.Context, inp generated.UserRegistrat
 
 	query := psql.Insert(`"core"."users"`).
 		Columns("name", "phone_number", "password_hash", "password_salt").
-		Values(inp.Name, inp.PhoneNumber, hashedPass, encryptedSalt)
+		Values(inp.Name, inp.PhoneNumber, hashedPass, encryptedSalt).Suffix("RETURNING id")
 
 	queryStr, args, err := query.ToSql()
 	if err != nil {
@@ -60,8 +60,9 @@ func (r *Repository) SetProfile(ctx context.Context, inp generated.UserRegistrat
 		return
 	}
 
+	var id int
 	var pqErr *pq.Error
-	res, err := r.Db.ExecContext(ctx, queryStr, args...)
+	err = r.Db.GetContext(ctx, &id, queryStr, args...)
 	errors.As(err, &pqErr)
 
 	if err != nil && pqErr != nil && pqErr.Code.Class() == IntegrityViolationClassCode {
@@ -70,9 +71,6 @@ func (r *Repository) SetProfile(ctx context.Context, inp generated.UserRegistrat
 	} else if err != nil {
 		return
 	}
-
-	_id, _ := res.LastInsertId()
-	id := int(_id)
 
 	resp.UserId = &id
 
