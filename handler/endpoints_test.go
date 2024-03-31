@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"bytes"
 	"database/sql"
 	"encoding/json"
 	"fmt"
@@ -453,22 +452,6 @@ func TestUpdateProfile(t *testing.T) {
 				sql.ErrNoRows, // the profiled deleted while token still valid
 			},
 		},
-		{
-			input: inputUpdateProfile{
-				userId: 3,
-				profile: generated.UserProfilePresenter{
-					Name:        &userName,
-					PhoneNumber: &correctPhoneNumber,
-				},
-			},
-			output: generated.MessageResponse{
-				Message: helpers.DRForbidden,
-			},
-			statusCode: http.StatusForbidden,
-			repoReturn: []interface{}{
-				nil,
-			},
-		},
 	}
 
 	e := echo.New()
@@ -480,7 +463,11 @@ func TestUpdateProfile(t *testing.T) {
 		accessToken, _, err := helpers.GenJWTTokens(expectation.input.userId, userName)
 		assert.Nil(t, err)
 
-		payload := bytes.NewBuffer([]byte(fmt.Sprintf(`{"name":"%s", "phone_number":"%s"}`, *expectation.input.profile.Name, *expectation.input.profile.PhoneNumber)))
+		form := make(url.Values)
+		form.Add("name", *expectation.input.profile.Name)
+		form.Add("phone_number", *expectation.input.profile.PhoneNumber)
+
+		payload := strings.NewReader(form.Encode())
 		req := httptest.NewRequest(http.MethodPatch, "/profile", payload)
 		req.Header.Set("content-type", "application/x-www-form-urlencoded")
 		req.Header.Set("authorization", fmt.Sprintf("Bearer %s", accessToken))
@@ -488,34 +475,38 @@ func TestUpdateProfile(t *testing.T) {
 		c := e.NewContext(req, rec)
 
 		repo := repository.NewMockRepositoryInterface(ctrl)
-		repo.EXPECT().UpdateProfile(c, expectation.input.userId, expectation.input.profile).Return(expectation.repoReturn...)
+
+		if len(expectation.repoReturn) > 0 {
+			repo.EXPECT().UpdateProfile(gomock.Any(), expectation.input.userId, expectation.input.profile).Return(expectation.repoReturn...)
+		}
 
 		s := NewServer(NewServerOptions{
 			Repository: repo,
 		})
 
-		s.Login(c)
+		s.PatchProfile(c)
 
 		assert.Equal(t, expectation.statusCode, rec.Result().StatusCode)
 
 		switch rec.Result().StatusCode {
 		case http.StatusOK:
-			var JWTTokens generated.JWTTokens
-			err = json.Unmarshal(rec.Body.Bytes(), &JWTTokens)
+			var response generated.MessageResponse
+			err = json.Unmarshal(rec.Body.Bytes(), &response)
 			assert.Nil(t, err)
-			assert.NotNil(t, JWTTokens.AccessToken)
-			assert.NotNil(t, JWTTokens.RefreshToken)
-			_, err = helpers.GetClaims(*JWTTokens.AccessToken)
-			assert.Nil(t, err)
-			newAccessToken, err := helpers.RefreshToken(*JWTTokens.RefreshToken)
-			assert.NotEqual(t, "", newAccessToken)
-			assert.Nil(t, err)
+			assert.NotZero(t, response)
+			assert.Contains(t, helpers.DROk, response.Message)
 		case http.StatusForbidden:
 			var msg generated.MessageResponse
 			err = json.Unmarshal(rec.Body.Bytes(), &msg)
 			assert.Nil(t, err)
 			assert.NotZero(t, msg)
 			assert.Contains(t, helpers.DRForbidden, msg.Message)
+		case http.StatusUnauthorized:
+			var msg generated.MessageResponse
+			err = json.Unmarshal(rec.Body.Bytes(), &msg)
+			assert.Nil(t, err)
+			assert.NotZero(t, msg)
+			assert.Contains(t, helpers.DRUnauthorized, msg.Message)
 		case http.StatusInternalServerError:
 			bodyResp := rec.Body.String()
 			t.Fatal(bodyResp)

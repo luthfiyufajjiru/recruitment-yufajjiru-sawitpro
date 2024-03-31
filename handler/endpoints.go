@@ -103,5 +103,43 @@ func (s *Server) GetProfile(ctx echo.Context) error {
 
 // (PATCH /profile)
 func (s *Server) PatchProfile(ctx echo.Context) error {
-	return ctx.String(http.StatusNotImplemented, helpers.DRNotImplemented)
+	tokenStr := ctx.Request().Header.Get("authorization")
+	idx := strings.Index(tokenStr, " ")
+	if tokenStr == "" || idx < 0 {
+		return ctx.JSON(http.StatusForbidden, generated.MessageResponse{
+			Message: helpers.DRForbidden,
+		})
+	}
+	tokenStr = tokenStr[idx+1:]
+
+	claims, err := helpers.TokenCheck(ctx, tokenStr)
+	if err != nil {
+		return ctx.JSON(http.StatusForbidden, generated.MessageResponse{
+			Message: helpers.DRForbidden,
+		})
+	}
+
+	userId := int(claims[helpers.ClaimUserId].(float64))
+
+	name := ctx.FormValue("name")
+	pn := ctx.FormValue("phone_number")
+	reqData := generated.UserProfilePresenter{
+		Name:        &name,
+		PhoneNumber: &pn,
+	}
+
+	err = s.Repository.UpdateProfile(ctx.Request().Context(), userId, reqData)
+	if errors.Is(err, errorIndex.ErrPhoneNumberExist) {
+		return ctx.JSON(http.StatusConflict, generated.MessageResponse{
+			Message: helpers.DRPhoneNumberExist,
+		})
+	} else if err != nil {
+		return ctx.JSON(http.StatusUnauthorized, generated.MessageResponse{
+			Message: helpers.DRUnauthorized,
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, generated.MessageResponse{
+		Message: helpers.DROk,
+	})
 }
