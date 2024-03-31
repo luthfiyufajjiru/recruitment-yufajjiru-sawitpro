@@ -10,6 +10,7 @@ type (
 
 	UserCredentialModel struct {
 		Id           int    `db:"id"`
+		Name         string `db:"name"`
 		PasswordHash []byte `db:"password_hash"`
 		PasswordSalt []byte `db:"password_salt"`
 	}

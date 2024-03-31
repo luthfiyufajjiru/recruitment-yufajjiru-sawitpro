@@ -203,6 +203,8 @@ func TestLogin(t *testing.T) {
 
 	var (
 		err                error
+		userId             = 1
+		userName           = "foo"
 		dummyToken         = "dummyToken" // we are not checking token with excpectation, but just test the response
 		correctPhoneNumber = "+6288888888888"
 		ctrl               = gomock.NewController(t)
@@ -218,9 +220,7 @@ func TestLogin(t *testing.T) {
 				Message: helpers.DRForbidden,
 			},
 			statusCode: http.StatusForbidden,
-			repoReturn: []interface{}{
-				nil,
-			},
+			repoReturn: []interface{}{},
 		},
 		{
 			input: generated.UserLoginRequest{
@@ -232,6 +232,8 @@ func TestLogin(t *testing.T) {
 			},
 			statusCode: http.StatusForbidden,
 			repoReturn: []interface{}{
+				userName,
+				userId,
 				sql.ErrNoRows,
 			},
 		},
@@ -246,6 +248,8 @@ func TestLogin(t *testing.T) {
 			},
 			statusCode: http.StatusOK,
 			repoReturn: []interface{}{
+				userName,
+				userId,
 				nil,
 			},
 		},
@@ -268,7 +272,10 @@ func TestLogin(t *testing.T) {
 		c := e.NewContext(req, rec)
 
 		repo := repository.NewMockRepositoryInterface(ctrl)
-		repo.EXPECT().ComparePassword(c, expectation.input.PhoneNumber, expectation.input.Password).Return(expectation.repoReturn...)
+
+		if len(expectation.repoReturn) > 0 {
+			repo.EXPECT().ComparePassword(gomock.Any(), expectation.input.PhoneNumber, expectation.input.Password).Return(expectation.repoReturn...)
+		}
 
 		s := NewServer(NewServerOptions{
 			Repository: repo,

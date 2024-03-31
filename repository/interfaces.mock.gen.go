@@ -36,11 +36,13 @@ func (m *MockRepositoryInterface) EXPECT() *MockRepositoryInterfaceMockRecorder 
 }
 
 // ComparePassword mocks base method.
-func (m *MockRepositoryInterface) ComparePassword(ctx context.Context, phone_number, password string) error {
+func (m *MockRepositoryInterface) ComparePassword(ctx context.Context, phone_number, password string) (string, int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ComparePassword", ctx, phone_number, password)
-	ret0, _ := ret[0].(error)
-	return ret0
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(int)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // ComparePassword indicates an expected call of ComparePassword.

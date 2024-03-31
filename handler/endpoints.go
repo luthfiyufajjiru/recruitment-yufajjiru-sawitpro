@@ -40,7 +40,34 @@ func (s *Server) Register(ctx echo.Context) error {
 
 // (POST /login)
 func (s *Server) Login(ctx echo.Context) error {
-	return ctx.String(http.StatusNotImplemented, helpers.DRNotImplemented)
+	usr := generated.UserLoginRequest{
+		Password:    ctx.FormValue("password"),
+		PhoneNumber: ctx.FormValue("phone_number"),
+	}
+	if usr.Password == "" || usr.PhoneNumber == "" {
+		return ctx.JSON(http.StatusForbidden, generated.MessageResponse{
+			Message: helpers.DRForbidden,
+		})
+	}
+
+	name, id, err := s.Repository.ComparePassword(ctx.Request().Context(), usr.PhoneNumber, usr.Password)
+	if err != nil {
+		return ctx.JSON(http.StatusForbidden, generated.MessageResponse{
+			Message: helpers.DRForbidden,
+		})
+	}
+
+	accessToken, refreshToken, err := helpers.GenJWTTokens(id, name)
+	if err != nil {
+		return ctx.JSON(http.StatusForbidden, generated.MessageResponse{
+			Message: helpers.DRForbidden,
+		})
+	}
+
+	return ctx.JSON(http.StatusOK, generated.JWTTokens{
+		AccessToken:  &accessToken,
+		RefreshToken: &refreshToken,
+	})
 }
 
 // (GET /profile)

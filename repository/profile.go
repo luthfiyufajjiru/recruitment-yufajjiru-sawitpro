@@ -120,10 +120,10 @@ func (r *Repository) UpdateProfile(ctx context.Context, user_id int, inp generat
 	return
 }
 
-func (r *Repository) ComparePassword(ctx context.Context, phone_number string, password string) (err error) {
+func (r *Repository) ComparePassword(ctx context.Context, phone_number string, password string) (name string, id int, err error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	query := psql.Select("password_hash", "password_salt").From(`"core".users`).Where("phone_number = ?", phone_number)
+	query := psql.Select("id", "name", "password_hash", "password_salt").From(`"core".users`).Where("phone_number = ?", phone_number)
 
 	queryStr, args, err := query.ToSql()
 	if err != nil {
@@ -139,6 +139,12 @@ func (r *Repository) ComparePassword(ctx context.Context, phone_number string, p
 	}
 
 	err = helpers.ValidatePassword(password, r.SaltSize, r.SecretKey, creds.PasswordHash, creds.PasswordSalt)
+	if err != nil {
+		return
+	}
+
+	id = creds.Id
+	name = creds.Name
 
 	return
 }
