@@ -257,7 +257,11 @@ func TestLogin(t *testing.T) {
 		expectation := expectations[i]
 		rec := httptest.NewRecorder()
 
-		payload := bytes.NewBuffer([]byte(fmt.Sprintf(`{"phone_number":"%s", "password":"%s"}`, expectation.input.PhoneNumber, expectation.input.Password)))
+		form := make(url.Values)
+		form.Add("phone_number", expectation.input.PhoneNumber)
+		form.Add("password", expectation.input.Password)
+
+		payload := strings.NewReader(form.Encode())
 		req := httptest.NewRequest(http.MethodPost, "/login", payload)
 		req.Header.Set("content-type", "application/x-www-form-urlencoded")
 
